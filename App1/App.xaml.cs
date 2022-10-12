@@ -1,5 +1,7 @@
-﻿using System;
+﻿using EasyModbus;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -96,5 +98,6 @@ namespace App1
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
+
     }
 }
