@@ -1,4 +1,5 @@
 ﻿using EasyModbus;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
@@ -109,6 +111,13 @@ namespace App1
             Apparent_power
         };
 
+        enum ModbusFlagData
+        {
+            Output_Enable = 0,
+            other_enable
+
+        }
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -116,7 +125,7 @@ namespace App1
             InitConnectionPeriodic();
         }
 
-        private int messageErrorCounter = 0;
+        public int messageErrorCounter = 0;
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             SetModbusIP();
@@ -126,6 +135,7 @@ namespace App1
 
         private float[] MeasurementsFloats = new float[Enum.GetNames(typeof(ModbusMeasurements)).Length];
         private float[] SetPointsFloats = new float[Enum.GetNames(typeof(ModbusSetpoints)).Length];
+        private bool[] FlagDataBools = new bool[5];
 
         private void ModInitialize()
         {
@@ -173,16 +183,85 @@ namespace App1
                 }
             }
         }
+
         private void PortBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             //TODO: Parse text
         }
         private void OutEnSwitch_Toggled(object sender, RoutedEventArgs e)
         {
+            WriteModbusAc();
             //TODO: Sync with variable
         }
 
-        private IAsyncAction m_workItem;
+        //start Write only async
+        private IAsyncAction modbusWriteWorkItem;
+        private void WriteModbusAc()
+        {
+
+            DispatchedHandler workItemHandler = new DispatchedHandler
+               (
+                   () =>
+                   {
+                       try
+                       {
+                           if (modbusClientLocal.Connected)
+                           {
+                               Debug.WriteLine("Write");
+
+                               SetPointsFloats[(int)ModbusSetpoints.Program_frequency] = Single.Parse(ProgFreq.Text);
+                               SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC] = Single.Parse(ProgVoltAC.Text);
+                               SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC] = Single.Parse(ProgVoltDC.Text);
+                               SetPointsFloats[(int)ModbusSetpoints.Power_limit] = Single.Parse(PowLim.Text);
+                               SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC] = Single.Parse(CuLimABC.Text);
+                               SetPointsFloats[(int)ModbusSetpoints.KVA_Limit] = Single.Parse(KVALim.Text);
+
+
+                               Debug.WriteLine("letter {1} = {0}", SetPointsFloats[0], ProgFreq.Text);
+
+                               Debug.WriteLine("All ok no probs");
+
+                               int[] int_data = new int[0];
+                               for (int i = 0; i < SetPointsFloats.Length; i++)
+                               {
+
+                                   int ab = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(SetPointsFloats[i]));
+                                   int aa = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(SetPointsFloats[i]) >> 16);
+
+                                   Array.Resize(ref int_data, int_data.Length + 1);
+                                   int_data[int_data.GetUpperBound(0)] = ab;
+
+                                   Array.Resize(ref int_data, int_data.Length + 1);
+                                   int_data[int_data.GetUpperBound(0)] = aa;
+                               };
+
+                               for (int k = 0; k < int_data.Length; k++)
+                               {
+                                   Debug.WriteLine("Data {0} = {1:X}", k, int_data[k]);
+                               }
+
+                               modbusClientLocal.WriteMultipleRegisters(3000, int_data);
+                               modbusClientLocal.WriteSingleCoil(4000, OutEnSwitch.IsOn);
+                           }
+
+                       }
+                       catch (FormatException)
+                       {
+                           Debug.WriteLine("'{0}' is not in a valid format.", ProgFreq.Text);
+                       }
+                       catch (Exception value)
+                       {
+                           errorMessage = value.Message;
+                       }
+                   }
+
+               );
+
+            modbusWriteWorkItem = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, workItemHandler);
+        }
+
+
+        private IAsyncAction modbusConnectionWorkItem;
         private bool conectionModFlagM;
         private String errorMessage = "";
         private void AsyConnect()
@@ -206,7 +285,7 @@ namespace App1
                    }
                );
 
-            m_workItem = Windows.System.Threading.ThreadPool.RunAsync(workItemHandler, WorkItemPriority.Normal, WorkItemOptions.TimeSliced);
+            modbusConnectionWorkItem = Windows.System.Threading.ThreadPool.RunAsync(workItemHandler, WorkItemPriority.Normal, WorkItemOptions.TimeSliced);
 
             DispatchedHandler showHandler = new DispatchedHandler
             (
@@ -235,15 +314,14 @@ namespace App1
                     {
                         return;
                     }
-
                     var ignored = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, showHandler);
-
                 }
             );
 
-            m_workItem.Completed = workCompletedHandler;
+            modbusConnectionWorkItem.Completed = workCompletedHandler;
         }
 
+        //Modbus events callbacks
         void UpdateConnectedChanged(object sender)
         {
             Debug.WriteLine("0_ UpdateConnectedChanged call");
@@ -325,9 +403,12 @@ namespace App1
 
                     Debug.WriteLine("Asking...");
                     //Modbus Register Request
-                    bool[] readCoils = modbusClientLocal.ReadCoils(4000, 5);    //Read 10 Coils from Server, starting with address 10
+                    bool[] ReadCoils = modbusClientLocal.ReadCoils(4000, 4);    //Read 10 Coils from Server, starting with address 10
                     Int32[] MeasurementsRegisters = modbusClientLocal.ReadInputRegisters(MEASURE_ADDRESS, 2 * Enum.GetNames(typeof(ModbusMeasurements)).Length);    //Read Holding Registers from Server, starting with Address 1
                     Int32[] SetpointRegisters = modbusClientLocal.ReadHoldingRegisters(SETPOINT_ADDRESS, 2 * Enum.GetNames(typeof(ModbusSetpoints)).Length);    //Read Holding Registers from Server, starting with Address 1
+
+                    //Get Some Flags
+                    System.Array.Copy(ReadCoils, FlagDataBools, ReadCoils.Length);
 
                     //Get Measurements
                     float[] temp_measurementsFloats = new float[0];
@@ -339,18 +420,46 @@ namespace App1
                     LoadFloatsFromReg(ref temp_setpointsFloats, SetpointRegisters);
                     System.Array.Copy(temp_setpointsFloats, SetPointsFloats, temp_setpointsFloats.Length); ;
 
-                    //Show in UI
+                    //Show received data
+
+                    SomeDisplay = new List<Measure>();
+                    for (int k = 0; k < MeasurementsFloats.Length; k++)
+                    {
+                        SomeDisplay.Add
+                        (
+                            new Measure
+                            (
+                                Enum.GetNames(typeof(ModbusMeasurements))[k],
+                                MeasurementsFloats[k].ToString(),
+                                "Unit",
+                                false
+                            )
+                        );
+                    }
+
+
                     _ = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync
                     (
                         CoreDispatcherPriority.Normal,
-                        () =>
+                    () =>
                         {
-                            ProgFreq.Text = SetPointsFloats[(int)ModbusSetpoints.Program_frequency].ToString();
-                            ProgVoltAC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC].ToString();
-                            ProgVoltDC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC].ToString();
-                            PowLim.Text = SetPointsFloats[(int)ModbusSetpoints.Power_limit].ToString();
-                            CuLimABC.Text = SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC].ToString();
-                            KVALim.Text = SetPointsFloats[(int)ModbusSetpoints.KVA_Limit].ToString();
+                            //Flag data
+                            OutEnSwitch.IsOn = ReadCoils[(int)ModbusFlagData.Output_Enable];
+
+                            //Measure data        
+                            dataGrid1.ItemsSource = SomeDisplay;
+
+                            //Setpoint data
+                            if (OutEnSwitch.IsOn)
+                            {
+                                ProgFreq.Text = SetPointsFloats[(int)ModbusSetpoints.Program_frequency].ToString();
+                                ProgVoltAC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC].ToString();
+                                ProgVoltDC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC].ToString();
+                                PowLim.Text = SetPointsFloats[(int)ModbusSetpoints.Power_limit].ToString();
+                                CuLimABC.Text = SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC].ToString();
+                                KVALim.Text = SetPointsFloats[(int)ModbusSetpoints.KVA_Limit].ToString();
+
+                            }
                         }
                     );
                 }
@@ -366,14 +475,13 @@ namespace App1
                 messageErrorCounter++;
                 Debug.Write("Fail: ");
                 Debug.WriteLine(value.Message);
-                if (messageErrorCounter > 1)
+                if (messageErrorCounter > 0)
                 {
                     messageErrorCounter = 0;
                     CancelCommPeriodic();
                 }
 
             }
-
             return Task.CompletedTask;
         }
 
@@ -424,6 +532,25 @@ namespace App1
                 CommPeriodicTimer = null;
             }
         }
+        public static List<Measure> SomeDisplay;
+    }
+
+    public class Measure
+    {
+        public String ZeroColumn { get; set; }
+        public String OneColumn { get; set; }
+        public String TwoColumn { get; set; }
+        public Boolean ThreeColumn { get; set; }
+
+        public Measure(String firstName, String lastName,
+            String address, Boolean isNew)
+        {
+            this.ZeroColumn = firstName;
+            this.OneColumn = lastName;
+            this.TwoColumn = address;
+            this.ThreeColumn = isNew;
+        }
+
 
     }
 }
