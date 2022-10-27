@@ -108,7 +108,10 @@ namespace App1
             Output_A_active_power,
             Output_B_active_power,
             Output_C_active_power,
-            Apparent_power
+            Apparent_power,
+            Output_A_apparent_power,
+            Output_B_apparent_power,
+            Output_C_apparent_power
         };
 
         enum ModbusFlagData
@@ -190,43 +193,74 @@ namespace App1
         }
         private void OutEnSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            WriteModbusAc();
             //TODO: Sync with variable
         }
 
-        //start Write only async
+        // Start write only async connection
         private IAsyncAction modbusWriteWorkItem;
-        private void WriteModbusAc()
+        private void UpdateSetpointsWrite()
         {
 
             DispatchedHandler workItemHandler = new DispatchedHandler
                (
                    () =>
                    {
+                       float[] temp_setpointsFloats = new float[Enum.GetNames(typeof(ModbusSetpoints)).Length];
                        try
                        {
-                           if (modbusClientLocal.Connected)
+                           bool[] OutputState = new bool[1];
+                           System.Array.Copy(SetPointsFloats, temp_setpointsFloats, SetPointsFloats.Length);
+
+                           OutputState = modbusClientLocal.ReadCoils(4000, 1);
+                           if (modbusClientLocal.Connected && !OutputState[0])
                            {
-                               Debug.WriteLine("Write");
+                               float AUX = Single.Parse(s: SetProgFreq.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency_C] = AUX;
 
-                               SetPointsFloats[(int)ModbusSetpoints.Program_frequency] = Single.Parse(ProgFreq.Text);
-                               SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC] = Single.Parse(ProgVoltAC.Text);
-                               SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC] = Single.Parse(ProgVoltDC.Text);
-                               SetPointsFloats[(int)ModbusSetpoints.Power_limit] = Single.Parse(PowLim.Text);
-                               SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC] = Single.Parse(CuLimABC.Text);
-                               SetPointsFloats[(int)ModbusSetpoints.KVA_Limit] = Single.Parse(KVALim.Text);
+                               AUX = Single.Parse(SetProgVoltAC.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_AC] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_AC_output_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_AC_output_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_AC_output_C] = AUX;
 
+                               AUX = Single.Parse(SetProgVoltDC.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_DC] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_DC_output_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_DC_output_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Program_voltage_DC_output_C] = AUX;
 
-                               Debug.WriteLine("letter {1} = {0}", SetPointsFloats[0], ProgFreq.Text);
+                               AUX = Single.Parse(SetPowLim.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.Power_limit] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Power_limit_output_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Power_limit_output_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Power_limit_output_C] = AUX;
 
-                               Debug.WriteLine("All ok no probs");
+                               AUX = Single.Parse(SetCuLimABC.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.Current_limit_ABC] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Current_limit_output_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Current_limit_output_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.Current_limit_output_C] = AUX;
+
+                               AUX = Single.Parse(SetKVALim.Text);
+                               temp_setpointsFloats[(int)ModbusSetpoints.KVA_Limit] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.KVA_Limit_output_A] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.KVA_Limit_output_B] = AUX;
+                               temp_setpointsFloats[(int)ModbusSetpoints.KVA_Limit_output_C] = AUX;
+
+                               for (int k = 0; k < temp_setpointsFloats.Length; k++)
+                               {
+                                   Debug.WriteLine("Float {0} = {1}", k, temp_setpointsFloats[k]);
+                               }
 
                                int[] int_data = new int[0];
-                               for (int i = 0; i < SetPointsFloats.Length; i++)
+                               for (int i = 0; i < temp_setpointsFloats.Length; i++)
                                {
 
-                                   int ab = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(SetPointsFloats[i]));
-                                   int aa = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(SetPointsFloats[i]) >> 16);
+                                   int ab = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(temp_setpointsFloats[i]));
+                                   int aa = (int)(0x0000FFFF & BitConverter.SingleToInt32Bits(temp_setpointsFloats[i]) >> 16);
 
                                    Array.Resize(ref int_data, int_data.Length + 1);
                                    int_data[int_data.GetUpperBound(0)] = ab;
@@ -241,14 +275,11 @@ namespace App1
                                }
 
                                modbusClientLocal.WriteMultipleRegisters(3000, int_data);
-                               modbusClientLocal.WriteSingleCoil(4000, OutEnSwitch.IsOn);
+
                            }
 
                        }
-                       catch (FormatException)
-                       {
-                           Debug.WriteLine("'{0}' is not in a valid format.", ProgFreq.Text);
-                       }
+
                        catch (Exception value)
                        {
                            errorMessage = value.Message;
@@ -259,7 +290,6 @@ namespace App1
 
             modbusWriteWorkItem = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, workItemHandler);
         }
-
 
         private IAsyncAction modbusConnectionWorkItem;
         private bool conectionModFlagM;
@@ -400,7 +430,6 @@ namespace App1
                 {
                     const int MEASURE_ADDRESS = 1000;
                     const int SETPOINT_ADDRESS = 3000;
-
                     Debug.WriteLine("Asking...");
                     //Modbus Register Request
                     bool[] ReadCoils = modbusClientLocal.ReadCoils(4000, 4);    //Read 10 Coils from Server, starting with address 10
@@ -420,46 +449,25 @@ namespace App1
                     LoadFloatsFromReg(ref temp_setpointsFloats, SetpointRegisters);
                     System.Array.Copy(temp_setpointsFloats, SetPointsFloats, temp_setpointsFloats.Length); ;
 
-                    //Show received data
-
                     SomeDisplay = new List<Measure>();
-                    for (int k = 0; k < MeasurementsFloats.Length; k++)
-                    {
-                        SomeDisplay.Add
-                        (
-                            new Measure
-                            (
-                                Enum.GetNames(typeof(ModbusMeasurements))[k],
-                                MeasurementsFloats[k].ToString(),
-                                "Unit",
-                                false
-                            )
-                        );
-                    }
-
-
+                    AddCustomDataList(ref SomeDisplay);
+                    //Show received data
                     _ = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync
                     (
                         CoreDispatcherPriority.Normal,
                     () =>
                         {
-                            //Flag data
-                            OutEnSwitch.IsOn = ReadCoils[(int)ModbusFlagData.Output_Enable];
-
                             //Measure data        
                             dataGrid1.ItemsSource = SomeDisplay;
-
                             //Setpoint data
-                            if (OutEnSwitch.IsOn)
-                            {
-                                ProgFreq.Text = SetPointsFloats[(int)ModbusSetpoints.Program_frequency].ToString();
-                                ProgVoltAC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC].ToString();
-                                ProgVoltDC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC].ToString();
-                                PowLim.Text = SetPointsFloats[(int)ModbusSetpoints.Power_limit].ToString();
-                                CuLimABC.Text = SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC].ToString();
-                                KVALim.Text = SetPointsFloats[(int)ModbusSetpoints.KVA_Limit].ToString();
-
-                            }
+                            ProgFreq.Text = SetPointsFloats[(int)ModbusSetpoints.Program_frequency].ToString();
+                            ProgVoltAC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_AC].ToString();
+                            ProgVoltDC.Text = SetPointsFloats[(int)ModbusSetpoints.Program_voltage_DC].ToString();
+                            PowLim.Text = SetPointsFloats[(int)ModbusSetpoints.Power_limit].ToString();
+                            CuLimABC.Text = SetPointsFloats[(int)ModbusSetpoints.Current_limit_ABC].ToString();
+                            KVALim.Text = SetPointsFloats[(int)ModbusSetpoints.KVA_Limit].ToString();
+                            //Set Switch Buton
+                            OutEnSwitch.IsOn = FlagDataBools[(int)ModbusFlagData.Output_Enable];
                         }
                     );
                 }
@@ -533,6 +541,133 @@ namespace App1
             }
         }
         public static List<Measure> SomeDisplay;
+        private void AddCustomDataList(ref List<Measure> SomeList)
+        {
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "Frequency",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_frequency].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_frequency].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_frequency].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Frequency].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "Voltage L-N RMS (AC+DC)",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_voltage_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_voltage_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_voltage_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Voltage_ACDC].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "VOLTAGE L-N RMS (AC)",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_voltage_line_to_line_AC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_voltage_line_to_line_AC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_voltage_line_to_line_AC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Voltage_line_to_line_AC].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "VOLTAGE L-N DC",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_voltage_line_to_line_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_voltage_line_to_line_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_voltage_line_to_line_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Voltage_line_to_line_DC].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "CURRENT RMS (AC+DC)",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_current_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_current_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_current_ACDC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Current_ACDC].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "CURRENT DC",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_current_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_current_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_current_DC].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Current_DC].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "POWER",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_active_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_active_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_active_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Active_power].ToString()
+                )
+            );
+
+            SomeDisplay.Add
+            (
+                new Measure
+                (
+                    "APP POWER",
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_A_apparent_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_B_apparent_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Output_C_apparent_power].ToString(),
+                    MeasurementsFloats[(int)ModbusMeasurements.Apparent_power].ToString()
+                )
+            );
+        }
+
+        private void Update_Setpoint_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateSetpointsWrite();
+        }
+
+        private void OutEnSwitch_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            //TODO: WAIT SWITCH State Change
+            bool OutputState = !OutEnSwitch.IsOn;
+
+            try
+            {
+                if (modbusClientLocal.Connected)
+                {
+                    bool[] SetCoils = new bool[1];
+                    SetCoils[0] = OutputState;
+                    Debug.WriteLine("To Send Modbus {0}", SetCoils[0]);
+                    modbusClientLocal.WriteMultipleCoils(4000, SetCoils);
+
+                }
+            }
+            catch (Exception value)
+            {
+                Debug.WriteLine(value.Message);
+            }
+
+        }
     }
 
     public class Measure
@@ -540,16 +675,19 @@ namespace App1
         public String ZeroColumn { get; set; }
         public String OneColumn { get; set; }
         public String TwoColumn { get; set; }
-        public Boolean ThreeColumn { get; set; }
+        public String ThreeColumn { get; set; }
+        public String FourColumn { get; set; }
 
-        public Measure(String firstName, String lastName,
-            String address, Boolean isNew)
+        public Measure(String zeroColumn, String b,
+            String c, String d, String e)
         {
-            this.ZeroColumn = firstName;
-            this.OneColumn = lastName;
-            this.TwoColumn = address;
-            this.ThreeColumn = isNew;
+            this.ZeroColumn = zeroColumn;
+            this.OneColumn = b;
+            this.TwoColumn = c;
+            this.ThreeColumn = d;
+            this.FourColumn = e;
         }
+
 
 
     }
