@@ -7,7 +7,7 @@
     xmlns:local="using:App1"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:Custom="using:Microsoft.UI.Xaml.Controls" xmlns:Windows10version1809="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 7)"
+    xmlns:Custom="using:Microsoft.UI.Xaml.Controls" xmlns:Windows10version1809="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 7)" xmlns:Windows10version1803="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 6)"
     x:Class="App1.MainPage"
     mc:Ignorable="d"    
     RequestedTheme="Dark"
@@ -27,49 +27,17 @@
         </Style>
     </Page.Resources>
 
-    <Grid>
+    <Grid MinHeight="600" MinWidth="800" >
+
         <Grid.Background>
             <AcrylicBrush TintColor="#CC3F517D" BackgroundSource="Backdrop" Opacity="0.4" TintOpacity="0.8"/>
         </Grid.Background>
 
-        <NavigationView
-            CompositeMode="SourceOver" 
-            ManipulationMode="Scale" 
-            AlwaysShowHeader="False" IsPaneOpen="True" 
-            IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed"
-            OpenPaneLength="170">
-            <NavigationView.MenuItems>
-                <NavigationViewItem Tag="mainWind" Content="Home">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE10F;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Tag="measWind" Content="Measures" IsEnabled="False">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB3C;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Tag="setWind" Content="Setpoints" IsEnabled="False">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E4;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Tag="saveData" Content="Datastream" IsEnabled="False">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8D0;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-        </NavigationView>
-
-        <Grid Margin="180,0,0,0" BorderBrush="{ThemeResource AppBarBorderThemeBrush}">
+        <Grid Margin="20,0,0,0" BorderBrush="{ThemeResource AppBarBorderThemeBrush}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="4*" />
-                <RowDefinition Height="6*" />
+                <RowDefinition Height="Auto" MinHeight="145"/>
+                <RowDefinition Height="Auto" MinHeight="200"/>
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
@@ -77,55 +45,13 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" 
-                       Text="Home" 
-                       Margin="10" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="36" />
-
-            <Grid Grid.Row="1" Grid.Column="1" Margin="10,40,60,10"
-                  >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Modbus TCP Connection Status"/>
-
-                <TextBlock Grid.Row="0" Grid.Column="1"
-                           VerticalAlignment="Center"
-                           Text="Power Source Output"/>
+            <ScrollViewer/>
 
 
-                <Grid x:Name="noteGrid"  
-                  Grid.Row="1" Grid.Column="0"
-                  Margin="0,0,20,0" Background="DarkSalmon">
-                    <RelativePanel/>
-                    <TextBlock x:Name="connStatusBlock" VerticalAlignment="Center" HorizontalAlignment="Center" Height="auto" Margin="10"  TextWrapping="NoWrap" Text="Not Connected" FocusVisualPrimaryBrush="#FFB52929"/>
-                </Grid>
-
-                <ToggleSwitch x:Name="OutEnSwitch" 
-                          Grid.Row="1" Grid.Column="1"
-                          VerticalAlignment="Center" HorizontalAlignment="Left"
-                          OnContent="Enabled" OffContent="Disabled" Header="" Margin="5" 
-                          Toggled="OutEnSwitch_Toggled" PointerReleased="OutEnSwitch_PointerReleased"/>
-            </Grid>
-
-            <Grid Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="1"  
+            <Grid Grid.Row="0" Grid.Column="0"  Grid.ColumnSpan="1"  
                   Width="Auto" Height="Auto"  
                   Margin="0,0,0,10" BorderThickness="0,1,0,0" Visibility="Visible" >
 
-                <Grid.BorderBrush>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,0.1">
-                        <GradientStop Color="#CC3F517D" Offset="0.0"/>
-                        <GradientStop Color="Black" Offset="0.65" />
-                    </LinearGradientBrush>
-                </Grid.BorderBrush>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="2*"/>
@@ -134,84 +60,68 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-                           Margin="10,10,0,20" TextWrapping="Wrap" 
-                           Text="Connection Address" FontSize="24" 
+                           Margin="10,0,0,10" TextWrapping="Wrap" 
+                           Text="Connection" FontSize="24" 
                 />
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Front Panel IP" Margin="10,0,0,0" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" Text="Front Panel IP" />
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Port" Margin="10,0,0,0"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" Text="Port" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" Text="Connection Status" />
 
                 <TextBox x:Name="ipBox" 
-                         Grid.Row="1" Grid.Column="1" Margin="3"
+                         Grid.Row="1" Grid.Column="1" Margin="0,0,0,0"
                          TextAlignment="Left" TextWrapping="NoWrap" 
                          TextChanged="IpBox_TextChanged" AcceptsReturn="True"/>
 
                 <TextBox x:Name="portBox" 
-                         Grid.Row="2" Grid.Column="1" Margin="3"
+                         Grid.Row="2" Grid.Column="1" Margin="0,4,0,0"
                          TextAlignment="Left" TextWrapping="Wrap" 
                          TextChanged="PortBox_TextChanged" 
                          />
 
+                <Grid x:Name="noteGrid"  
+                  Grid.Row="3" Grid.Column="1" Margin="0,4,0,0"
+                      
+                      Background="DarkSalmon" BorderThickness="2" BorderBrush="#FF51545B">
+                    <TextBlock x:Name="connStatusBlock" VerticalAlignment="Center" HorizontalAlignment="Left" Height="25" Margin="10,0,0,0"  TextWrapping="NoWrap" Text="Not Connected" FocusVisualPrimaryBrush="#FFB52929"/>
+                </Grid>
+
                 <Button Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" 
-                        Windows10version1809:CornerRadius="10,10,10,10" 
-                        Height="70" Margin="30,0,0,0" 
-                        Content="Set IP Addres" 
+                        Windows10version1809:CornerRadius="10" 
+                        MinHeight="50" Height="Auto" Margin="30,0,0,0" 
+                        Content="Connect"
                         VerticalAlignment="Center" RenderTransformOrigin="0.38,0.391"  
                         Click="Button_Click" />
-            </Grid>
 
-            <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1"  
-                  Width="Auto" Height="Auto"  
-                  Margin="0,10,0,10" 
-                  BorderThickness="0,1,0,0" Visibility="Visible" >
-                <Grid.BorderBrush>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,0.1">
-                        <GradientStop Color="#CC3F517D" Offset="0.0"/>
-                        <GradientStop Color="Black" Offset="0.65" />
-                    </LinearGradientBrush>
-                </Grid.BorderBrush>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-                           Margin="10"
-                           TextWrapping="Wrap" Text="Setpoint Values" FontSize="24" 
+                <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                           Margin="10,0,0,10" TextWrapping="Wrap" 
+                           Text="Program" FontSize="24" 
                 />
 
-                <TextBlock Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Program Frequency" />
-                <TextBlock Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Program Voltage AC"/>
-                <TextBlock Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="Program Voltage DC"/>
+                <TextBlock Grid.Row="5" Grid.Column="0"
+                           VerticalAlignment="Center" Margin="10"
+                           Text="Power Source Output"/>
 
-                <TextBox x:Name="SetProgFreq"   Margin="5"  Grid.Column="1" Grid.Row="1" TextWrapping="Wrap" />
-                <TextBox x:Name="SetProgVoltAC" Margin="5"  Grid.Column="1" Grid.Row="2" TextWrapping="Wrap"/>
-                <TextBox x:Name="SetProgVoltDC" Margin="5"  Grid.Column="1" Grid.Row="3" TextWrapping="Wrap"/>
+                <ToggleSwitch x:Name="OutEnSwitch" 
+                          Grid.Row="5" Grid.Column="1"
+                          VerticalAlignment="Center" HorizontalAlignment="Left"
+                          OnContent="Enabled" Header="" Margin="10,0,0,0"
+                          Toggled="OutEnSwitch_Toggled" PointerReleased="OutEnSwitch_PointerReleased" IsHoldingEnabled="False" IsRightTapEnabled="False" IsDoubleTapEnabled="False" IsTapEnabled="False" OffContent="Diseable"/>
 
-                <TextBlock x:Name="ProgFreq"   Margin="5"  Grid.Column="2" Grid.Row="1"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
-                <TextBlock x:Name="ProgVoltAC" Margin="5"  Grid.Column="2" Grid.Row="2"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
-                <TextBlock x:Name="ProgVoltDC" Margin="5"  Grid.Column="2" Grid.Row="3"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
 
             </Grid>
 
-            <Grid Grid.Row="2" Grid.Column="1"  Grid.ColumnSpan="1"  
-                  Width="Auto" Height="Auto" Margin="0,10,0,10" 
-                  BorderThickness="0,1,0,0">
-
+            <Grid Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="2" Width="Auto" Height="Auto" Margin="0,0,0,0"  BorderThickness="0,0,0,0">
                 <Grid.BorderBrush>
                     <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                         <GradientStop Color="#CC3F517D" Offset="0.0"/>
@@ -220,63 +130,208 @@
                 </Grid.BorderBrush>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Power Limit"       />
-                <TextBlock Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Current Limit ABC" />
-                <TextBlock Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="KVA Limit"         />
 
-                <TextBox x:Name="SetPowLim"     Margin="5"  Grid.Column="1" Grid.Row="1" TextWrapping="Wrap"/>
-                <TextBox x:Name="SetCuLimABC"   Margin="5"  Grid.Column="1" Grid.Row="2" TextWrapping="Wrap"/>
-                <TextBox x:Name="SetKVALim"     Margin="5"  Grid.Column="1" Grid.Row="3" TextWrapping="Wrap"/>
 
-                <TextBlock x:Name="PowLim"     Margin="5"  Grid.Column="2" Grid.Row="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
-                <TextBlock x:Name="CuLimABC"   Margin="5"  Grid.Column="2" Grid.Row="2" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
-                <TextBlock x:Name="KVALim"     Margin="5"  Grid.Column="2" Grid.Row="3" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
 
-                <Button Grid.Column="3" Grid.Row="1" Grid.RowSpan="3" 
-                        Windows10version1809:CornerRadius="10,10,10,10" 
-                        Height="70" Margin="10,0,10,0" 
-                        Content="Update Values"
-                        VerticalAlignment="Center" 
-                        HorizontalAlignment="Center" 
-                        RenderTransformOrigin="0.38,0.391"
-                        Click="Update_Setpoint_Click" />
+                <Grid x:Name="SetPhA" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Width="Auto" Height="Auto" Margin="0" BorderThickness="1,1,1,1" Visibility="Visible" >
+                    <Grid.BorderBrush>
+                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop Color="#CC3F517D" Offset="0.0"/>
+                            <GradientStop Color="#CC3F517D" Offset="0.65" />
+                        </LinearGradientBrush>
+                    </Grid.BorderBrush>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Setpoints Phase A" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="10" MinHeight="5" TextWrapping="NoWrap" FontSize="20"/>
+
+                    <TextBlock Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Frequency" />
+                    <TextBlock Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Voltage AC"/>
+                    <TextBlock Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="Voltage DC"/>
+
+                    <TextBox x:Name="ASetProgFreq"   Margin="5"  Grid.Column="1" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="ASetProgVoltAC" Margin="5"  Grid.Column="1" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="ASetProgVoltDC" Margin="5"  Grid.Column="1" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="AProgFreq"   Margin="10"  Grid.Column="2" Grid.Row="1"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="AProgVoltAC" Margin="10"  Grid.Column="2" Grid.Row="2"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="AProgVoltDC" Margin="10"  Grid.Column="2" Grid.Row="3"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Power Limit"     />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Current Limit" />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="KVA Limit"       />
+
+                    <TextBox x:Name="ASetPowLim"     Margin="5"  Grid.Column="4" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="ASetCuLimABC"   Margin="5"  Grid.Column="4" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="ASetKVALim"     Margin="5"  Grid.Column="4" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="APowLim"     Margin="5"  Grid.Column="5" Grid.Row="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ACuLimABC"   Margin="5"  Grid.Column="5" Grid.Row="2" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="AKVALim"     Margin="5"  Grid.Column="5" Grid.Row="3" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="3" Grid.ColumnSpan="3" Grid.Row="0" Margin="0" HorizontalAlignment="Center"
+                        Windows10version1809:CornerRadius="10" RenderTransformOrigin="0.38,0.391" Click="Update_Setpoint_ClickA" 
+                        Content="Update Setpoints"/>
+
+                </Grid>
+
+                <Grid x:Name="SetPhB" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" Width="Auto" Height="Auto" Margin="0" BorderThickness="0,1,1,1" Visibility="Visible" >
+
+                    <Grid.BorderBrush>
+                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop Color="#CC3F517D" Offset="0.0"/>
+                            <GradientStop  Color="#CC3F517D"  Offset="0.65" />
+                        </LinearGradientBrush>
+                    </Grid.BorderBrush>
+
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Setpoints Phase B" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="10" MinHeight="24" TextWrapping="NoWrap" FontSize="20"/>
+
+                    <TextBlock Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Frequency" />
+                    <TextBlock Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Voltage AC"/>
+                    <TextBlock Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="Voltage DC"/>
+
+                    <TextBox x:Name="BSetProgFreq"   Margin="5"  Grid.Column="1" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="BSetProgVoltAC" Margin="5"  Grid.Column="1" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="BSetProgVoltDC" Margin="5"  Grid.Column="1" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="BProgFreq"   Margin="10"  Grid.Column="2" Grid.Row="1"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="BProgVoltAC" Margin="10"  Grid.Column="2" Grid.Row="2"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="BProgVoltDC" Margin="10"  Grid.Column="2" Grid.Row="3"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Power Limit"     />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Current Limit"   />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="KVA Limit"       />
+
+                    <TextBox x:Name="BSetPowLim"     Margin="5"  Grid.Column="4" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="BSetCuLimABC"   Margin="5"  Grid.Column="4" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="BSetKVALim"     Margin="5"  Grid.Column="4" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="BPowLim"     Margin="5"  Grid.Column="5" Grid.Row="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="BCuLimABC"   Margin="5"  Grid.Column="5" Grid.Row="2" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="BKVALim"     Margin="5"  Grid.Column="5" Grid.Row="3" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+
+                    <Button Grid.Column="3" Grid.ColumnSpan="3" Grid.Row="0" Margin="0" HorizontalAlignment="Center"
+                        Windows10version1809:CornerRadius="10" RenderTransformOrigin="0.38,0.391" Click="Update_Setpoint_ClickB" 
+                        Content="Update Setpoints"/>
+
+
+
+                </Grid>
+
+                <Grid x:Name="SetPhC" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="1" Width="Auto" Height="Auto" Margin="0" BorderThickness="0,1,1,1" Visibility="Visible" >
+
+                    <Grid.BorderBrush>
+                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop Color="#CC3F517D" Offset="0.0"/>
+                            <GradientStop  Color="#CC3F517D"  Offset="0.65" />
+                        </LinearGradientBrush>
+                    </Grid.BorderBrush>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Setpoints Phase C" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="10" MinHeight="24" TextWrapping="NoWrap" FontSize="20"/>
+
+                    <TextBlock Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Frequency" />
+                    <TextBlock Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Voltage AC"/>
+                    <TextBlock Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="Voltage DC"/>
+
+                    <TextBox x:Name="CSetProgFreq"   Margin="5"  Grid.Column="1" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="CSetProgVoltAC" Margin="5"  Grid.Column="1" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="CSetProgVoltDC" Margin="5"  Grid.Column="1" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="CProgFreq"   Margin="10"  Grid.Column="2" Grid.Row="1"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CProgVoltAC" Margin="10"  Grid.Column="2" Grid.Row="2"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CProgVoltDC" Margin="10"  Grid.Column="2" Grid.Row="3"   TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="1" TextWrapping="Wrap" Text="Power Limit"     />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="2" TextWrapping="Wrap" Text="Current Limit"   />
+                    <TextBlock Grid.Column="3" Margin="10"  Grid.Row="3" TextWrapping="Wrap" Text="KVA Limit"       />
+
+                    <TextBox x:Name="CSetPowLim"     Margin="5"  Grid.Column="4" Grid.Row="1" TextWrapping="Wrap"/>
+                    <TextBox x:Name="CSetCuLimABC"   Margin="5"  Grid.Column="4" Grid.Row="2" TextWrapping="Wrap"/>
+                    <TextBox x:Name="CSetKVALim"     Margin="5"  Grid.Column="4" Grid.Row="3" TextWrapping="Wrap"/>
+
+                    <TextBlock x:Name="CPowLim"     Margin="5"  Grid.Column="5" Grid.Row="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CCuLimABC"   Margin="5"  Grid.Column="5" Grid.Row="2" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CKVALim"     Margin="5"  Grid.Column="5" Grid.Row="3" TextWrapping="Wrap" IsTextSelectionEnabled="True" VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="3" Grid.ColumnSpan="3" Grid.Row="0" Margin="0" HorizontalAlignment="Center"
+                        Windows10version1809:CornerRadius="10" RenderTransformOrigin="0.38,0.391" Click="Update_Setpoint_ClickC" 
+                        Content="Update Setpoints"/>
+                </Grid>
+
+
             </Grid>
 
             <controls:DataGrid x:Name="dataGrid1" 
-                Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
-                Height="auto" Margin="12" 
+                Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                Height="auto" Margin="0,0,0,0" 
                 MaxWidth="650"
-                AutoGenerateColumns="False"
                 VerticalScrollBarVisibility="Auto"
                 FontSize="20"
                 ColumnHeaderHeight="50"
+                Visibility="Visible"
+                AutoGenerateColumns="True"
                 HorizontalAlignment="Left"
+                AutoGeneratingColumn="dataGrid1_AutoGeneratingColumn"
                 >
-                <controls:DataGrid.Columns>
-                    <controls:DataGridTextColumn Header="Var Name" Width="Auto" 
-                                             Binding="{Binding ZeroColumn}" />
-                    <controls:DataGridTextColumn Header="Phase 1" Width="Auto"
-                                             Binding="{Binding OneColumn}" />
-                    <controls:DataGridTextColumn Header="Phase 2" Width="Auto"
-                                             Binding="{Binding TwoColumn}" />
-                    <controls:DataGridTextColumn Header="Phase 3" Width="Auto"
-                                             Binding="{Binding ThreeColumn}" />
-                    <controls:DataGridTextColumn Header="All" Width="Auto"
-                                             Binding="{Binding FourColumn}"/>
-                </controls:DataGrid.Columns>
+
             </controls:DataGrid>
         </Grid>
     </Grid>
