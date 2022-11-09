@@ -121,22 +121,57 @@ namespace App1
         {
             Output_Enable = 0,
             other_enable
+        };
+
+        enum ModbusConnectionStates
+        {
+            timeout = -2146233088,
+            disconnected = 2,
 
         }
+
+
 
         public MainPage()
         {
             this.InitializeComponent();
             ModInitialize();
-            InitConnectionPeriodic();
         }
 
         public int messageErrorCounter = 0;
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            SetModbusIP();
-            SetModbusPort();
-            CancelCommPeriodic();
+            if (!conectionModFlagM)
+            {
+                if (!userConnectionStartFlag)
+                {
+                    userConnectionStartFlag = true;
+                    Debug.WriteLine("Go On");
+                    InitConnectionPeriodic();
+                    SetModbusIP();
+                    SetModbusPort();
+                    con_button.Content = "Cancel";
+                }
+                else
+                {
+                    userConnectionStartFlag = false;
+                    Debug.WriteLine("Stop Trying");
+                    CancelConnectionPeriodic();
+                    CancelCommPeriodic();
+                    connStatusBlock.Text = "Canceled";
+                    con_button.Content = "Connect";
+                }
+            }
+            else
+            {
+                userConnectionStartFlag = false;
+                Debug.WriteLine("Go Off");
+                modbusClientLocal.Disconnect();
+                CancelCommPeriodic();
+                con_button.Content = "Connect";
+                connStatusBlock.Text = "Disconnected";
+
+            }
         }
 
         private float[] MeasurementsFloats = new float[Enum.GetNames(typeof(ModbusMeasurements)).Length];
@@ -145,13 +180,14 @@ namespace App1
 
         private void ModInitialize()
         {
+            conectionModFlagM = false;
             modbusClientLocal = new EasyModbus.ModbusClient();
             modbusClientLocal.ReceiveDataChanged += new EasyModbus.ModbusClient.ReceiveDataChangedHandler(UpdateReceiveData);
             modbusClientLocal.SendDataChanged += new EasyModbus.ModbusClient.SendDataChangedHandler(UpdateSendData);
             modbusClientLocal.ConnectedChanged += new EasyModbus.ModbusClient.ConnectedChangedHandler(UpdateConnectedChanged);
 
             modbusClientLocal.IPAddress = "192.168.107.190";
-            AsyConnect();
+            //AsyConnect();
 
             ipBox.Text = modbusClientLocal.IPAddress;
             portBox.Text = modbusClientLocal.Port.ToString();
@@ -280,7 +316,7 @@ namespace App1
                 OutputState = modbusClientLocal.ReadCoils(4000, 1);
                 if (modbusClientLocal.Connected && !OutputState[0])
                 {
-                    float aux = Single.Parse(ASetProgFreq.Text);
+                    float aux = Single.Parse(BSetProgFreq.Text);
                     temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency] = aux;
                     temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency_A] = aux;
                     temp_setpointsFloats[(int)ModbusSetpoints.Program_frequency_B] = aux;
@@ -394,6 +430,7 @@ namespace App1
         private IAsyncAction modbusConnectionWorkItem;
         private bool conectionModFlagM;
         private String errorMessage = "";
+        private int errorIdentifier;
         private void AsyConnect()
         {
             DispatchedHandler firstshowHandler = new DispatchedHandler
@@ -424,6 +461,7 @@ namespace App1
                        catch (Exception value)
                        {
                            errorMessage = value.Message;
+                           errorIdentifier = value.HResult;
                            conectionModFlagM = false;
                        }
                    }
@@ -439,12 +477,27 @@ namespace App1
                 if (conectionModFlagM)
                 {
                     connStatusBlock.Text = "Connected";
+                    bSetPhaseA.IsEnabled = true;
+                    bSetPhaseB.IsEnabled = true;
+                    bSetPhaseC.IsEnabled = true;
+                    OutEnSwitch.IsEnabled = true;
+                    con_button.Content = "Disconnect";
+
                     aColorBrush = new SolidColorBrush(Colors.DarkOliveGreen);
                 }
                 else
                 {
                     Debug.WriteLine("Not connected");
-                    connStatusBlock.Text = errorMessage;
+
+                    switch (errorIdentifier)
+                    {
+                        case ((int)ModbusConnectionStates.timeout):
+                            connStatusBlock.Text = "Connection Timeout ";
+                            break;
+                        default:
+                            connStatusBlock.Text = errorMessage;
+                            break;
+                    }
                     aColorBrush = new SolidColorBrush(Colors.DarkRed);
                 }
                 noteGrid.Background = aColorBrush;
@@ -475,18 +528,31 @@ namespace App1
                 Debug.WriteLine("UC Connected!");
                 Debug.Unindent();
                 CancelConnectionPeriodic();
-
-
             }
             else
             {
                 Debug.WriteLine("UC NOT Connected!");
+                conectionModFlagM = false;
+                DispatchedHandler disconShow = new DispatchedHandler
+               (
+                   () =>
+                   {
+                       SolidColorBrush startColorBrush = new SolidColorBrush(Colors.DarkOrange);
+                       noteGrid.Background = startColorBrush;
+                       bSetPhaseA.IsEnabled = false;
+                       bSetPhaseB.IsEnabled = false;
+                       bSetPhaseC.IsEnabled = false;
+                       OutEnSwitch.IsEnabled = false;
+
+                   }
+               );
+                var ignored = CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, disconShow);
             }
         }
 
         void UpdateReceiveData(object sender)
         {
-            Debug.WriteLine("1_ UpdateReceiveData call");
+            //Debug.WriteLine("1_ UpdateReceiveData call");
             //byte[]  modbusClientLocal.receiveData;
         }
 
@@ -695,6 +761,7 @@ namespace App1
         }
 
         private ThreadPoolTimer CommPeriodicTimer;
+        private bool userConnectionStartFlag = false;
         public void InitCommPeriodic()
         {
             TimeSpan period;
@@ -716,7 +783,18 @@ namespace App1
                 (source) =>
                 {
                     Debug.WriteLine("Comm Cancelled");
-                    InitConnectionPeriodic();
+                    //User cancelled? use semaphore?
+                    if (userConnectionStartFlag)
+                    {
+                        InitConnectionPeriodic();
+                    }
+                    else
+                    {
+                        if (modbusClientLocal.Connected)
+                        {
+                            modbusClientLocal.Disconnect();
+                        }
+                    }
                 }
             );
         }
@@ -941,7 +1019,6 @@ namespace App1
             }
 
         }
-
 
         private void dataGrid1_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
